@@ -120,7 +120,7 @@ class DVRouter(DVRouterBase):
         """
         
         ##### Begin Stages 5, 9 #####
-
+        
         ##### End Stages 5, 9 #####
 
     def handle_route_advertisement(self, route_dst, route_latency, port):
@@ -134,7 +134,18 @@ class DVRouter(DVRouterBase):
         """
         
         ##### Begin Stages 4, 10 #####
-
+        print(self.table)
+        print(route_dst)
+        print(route_latency)
+        print(port)
+        if route_dst not in self.table.keys():
+            self.table[route_dst] = TableEntry(dst=route_dst ,port=port,latency=route_latency + self.ports.get_latency(port),expire_time=api.current_time() + 15)
+            return 
+        if  port == self.table[route_dst].port:
+            self.table[route_dst] = TableEntry(dst=route_dst ,port=port,latency=route_latency+ self.ports.get_latency(port),expire_time=api.current_time() + 15)
+            return 
+        if  route_latency + self.ports.get_latency(port) < self.table[route_dst].latency:
+            self.table[route_dst] = TableEntry(dst=route_dst ,port=port,latency=route_latency + self.ports.get_latency(port),expire_time=api.current_time() + 15)
         ##### End Stages 4, 10 #####
 
     def handle_link_up(self, port, latency):

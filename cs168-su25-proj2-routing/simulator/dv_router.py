@@ -95,7 +95,6 @@ class DVRouter(DVRouterBase):
         if packet.dst  in self.table and self.table[packet.dst].latency < INFINITY:
             self.send(packet , self.table[packet.dst].port)
         ##### End Stage 2 #####
-
     def send_routes(self, force=False, single_port=None):
         """
         Send route advertisements for all routes in the table.
@@ -109,7 +108,9 @@ class DVRouter(DVRouterBase):
         """
         
         ##### Begin Stages 3, 6, 7, 8, 10 #####
-
+        for port in self.ports.get_all_ports():
+            for key in self.table.keys():
+                self.send_route(port , key , self.table[key].latency)
         ##### End Stages 3, 6, 7, 8, 10 #####
 
     def expire_routes(self):

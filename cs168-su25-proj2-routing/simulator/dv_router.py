@@ -24,7 +24,7 @@ class DVRouter(DVRouterBase):
 
     # -----------------------------------------------
     # At most one of these should ever be on at once
-    SPLIT_HORIZON = False
+    SPLIT_HORIZON = True
     POISON_REVERSE = False
     # -----------------------------------------------
 

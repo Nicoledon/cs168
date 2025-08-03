@@ -989,7 +989,7 @@ class TestRemoveRoutes(TestDVRouterBase):
 
         self._assert_table_equal(
             {
-                h3: TableEntry(dst=h3, port=10, latency=1, expire_time=FOREVER),
+                h3: TableEntry(dst=h3, port=10, latency=0.1, expire_time=FOREVER),
             }
         )
 

@@ -56,6 +56,8 @@ class DVRouter(DVRouterBase):
         self.table = Table()
         self.table.owner = self
         ##### Begin Stage 10A #####
+
+
         ##### End Stage 10A #####
 
     def add_static_route(self, host, port):
@@ -106,6 +108,9 @@ class DVRouter(DVRouterBase):
         ##### Begin Stages 3, 6, 7, 8, 10 #####
         for port in self.ports.get_all_ports():
             for key in self.table.keys():
+                if self.table[key].latency > self.ROUTE_TTL  or self.table[key].latency == INFINITY:
+                    self.send_route(port , key , INFINITY)
+                    continue
                 if self.SPLIT_HORIZON == True and self.table[key].port == port :
                    continue 
                 if self.POISON_REVERSE == True and self.table[key].port == port:
@@ -137,7 +142,7 @@ class DVRouter(DVRouterBase):
         :param port: the port that the advertisement arrived on.
         :return: nothing.
         """
-        
+     
         ##### Begin Stages 4, 10 #####
         if route_dst not in self.table.keys():
             self.table[route_dst] = TableEntry(dst=route_dst ,port=port,latency=route_latency + self.ports.get_latency(port),expire_time=api.current_time() + 15)
@@ -160,6 +165,7 @@ class DVRouter(DVRouterBase):
         self.ports.add_port(port, latency)
 
         ##### Begin Stage 10B #####
+        
         ##### End Stage 10B #####
 
     def handle_link_down(self, port):
@@ -172,7 +178,7 @@ class DVRouter(DVRouterBase):
         self.ports.remove_port(port)
 
         ##### Begin Stage 10B #####
-
+        
         ##### End Stage 10B #####
 
     # Feel free to add any helper methods!

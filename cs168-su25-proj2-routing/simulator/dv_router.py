@@ -118,14 +118,11 @@ class DVRouter(DVRouterBase):
                     if force == True:
                         self.send_route(port , key , self.table[key].latency)
                     else:
-                       print(self.history[port].keys())
-                       if key in self.history[port].keys():
-                          if self.history[port][key] != self.table[key].latency:
-                             self.send_route(port , key , self.table[key].latency)
-                             self.history[port][key] = self.table[key].latency
-                       else:
-                           self.send_route(port ,  key , self.table[key].latency)
-                           self.history[port][key] = self.table[key].latency
+                        if key not in self.history.keys() or self.history[key] != self.table[key].latency:
+                            self.send_route(port , key , self.table[key].latency)
+        for key in self.table.keys():
+            self.history[key] = self.table[key].latency
+
         ##### End Stages 3, 6, 7, 8, 10 #####
 
     def expire_routes(self):
@@ -157,7 +154,6 @@ class DVRouter(DVRouterBase):
         """
      
         ##### Begin Stages 4, 10 #####
-        self.history = {port : {} for port in self.ports.get_all_ports()}
         if route_dst not in self.table.keys():
             self.table[route_dst] = TableEntry(dst=route_dst ,port=port,latency=route_latency + self.ports.get_latency(port),expire_time=api.current_time() + 15)
             self.send_routes(force=False)
@@ -169,7 +165,6 @@ class DVRouter(DVRouterBase):
         if  route_latency + self.ports.get_latency(port) < self.table[route_dst].latency:
             self.table[route_dst] = TableEntry(dst=route_dst ,port=port,latency=route_latency + self.ports.get_latency(port),expire_time=api.current_time() + 15)
             self.send_routes(force=False)
-
         ##### End Stages 4, 10 #####
 
     def handle_link_up(self, port, latency):

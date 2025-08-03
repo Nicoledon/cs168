@@ -36,7 +36,6 @@ class DVRouter(DVRouterBase):
 
     # Determines if you send poison when a link goes down
     POISON_ON_LINK_DOWN = False
-
     def __init__(self):
         """
         Called when the instance is initialized.
@@ -56,9 +55,7 @@ class DVRouter(DVRouterBase):
         # This is the table that contains all current routes
         self.table = Table()
         self.table.owner = self
-
         ##### Begin Stage 10A #####
-
         ##### End Stage 10A #####
 
     def add_static_route(self, host, port):
@@ -109,7 +106,10 @@ class DVRouter(DVRouterBase):
         ##### Begin Stages 3, 6, 7, 8, 10 #####
         for port in self.ports.get_all_ports():
             for key in self.table.keys():
-                self.send_route(port , key , self.table[key].latency)
+                if self.SPLIT_HORIZON == True and self.table[key].port == port :
+                   continue 
+                else :
+                    self.send_route(port , key , self.table[key].latency)
         ##### End Stages 3, 6, 7, 8, 10 #####
 
     def expire_routes(self):

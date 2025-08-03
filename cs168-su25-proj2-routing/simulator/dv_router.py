@@ -129,8 +129,12 @@ class DVRouter(DVRouterBase):
         for key in self.table.keys():
             if self.table[key].expire_time -api.current_time() <= 0:
                 expire_list.append(key)
+            
         for item in expire_list:
-            self.table.pop(item)
+            if self.POISON_EXPIRED:
+                self.table[item] = TableEntry(dst=item,port=self.table[item].port,latency=INFINITY,expire_time=api.current_time() + self.ROUTE_TTL)
+            else:
+                self.table.pop(item)
         ##### End Stages 5, 9 #####
 
     def handle_route_advertisement(self, route_dst, route_latency, port):

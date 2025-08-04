@@ -2077,7 +2077,7 @@ class TestTriggeredIncrementalUpdates(TestDVRouterBase):
             {
                 1: {Route(h1, 13)},
                 2: {Route(h1, 13)},
-                3: set(),
+                3: {Route(h1, latency=INFINITY)},
                 10: {Route(h1, 13)},
             },
         )

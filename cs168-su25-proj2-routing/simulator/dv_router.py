@@ -107,13 +107,16 @@ class DVRouter(DVRouterBase):
         ##### Begin Stages 3, 6, 7, 8, 10 #####
         for port in self.ports.get_all_ports():
             for key in self.table.keys():
-                if self.table[key].latency > self.ROUTE_TTL  or self.table[key].latency == INFINITY:
+                if self.table[key].latency > self.ROUTE_TTL:
                     self.send_route(port , key , INFINITY)
                     continue
                 if self.SPLIT_HORIZON == True and self.table[key].port == port :
                    continue 
                 if self.POISON_REVERSE == True and self.table[key].port == port:
-                    self.send_route(port , key , INFINITY)
+                    if force == True:
+                        self.send_route(port , key , INFINITY)
+                    if force == False and key not in self.history.keys() or self.history[key] != self.table[key].latency:
+                        self.send_route(port , key , INFINITY)
                 else:
                     if force == True:
                         self.send_route(port , key , self.table[key].latency)
@@ -122,7 +125,6 @@ class DVRouter(DVRouterBase):
                             self.send_route(port , key , self.table[key].latency)
         for key in self.table.keys():
             self.history[key] = self.table[key].latency
-
         ##### End Stages 3, 6, 7, 8, 10 #####
 
     def expire_routes(self):

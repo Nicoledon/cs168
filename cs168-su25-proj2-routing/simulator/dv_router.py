@@ -206,7 +206,18 @@ class DVRouter(DVRouterBase):
         self.ports.remove_port(port)
 
         ##### Begin Stage 10B #####
-        
-        ##### End Stage 10B #####
+        if self.POISON_ON_LINK_DOWN:
+           for key in self.table.keys():
+               if self.table[key].port == port:
+                   self.table[key] = TableEntry(dst=self.table[key].dst ,port =port , latency= INFINITY , expire_time=api.current_time() + self.ROUTE_TTL)
+                   self.send_routes(force=False)
+        else:
+           items = []
+           for key in self.table.keys():
+               if self.table[key].port == port:
+                  items.append(key)
+           for item in items:
+                self.table.pop(item)
+            ##### End Stage 10B #####
 
     # Feel free to add any helper methods!

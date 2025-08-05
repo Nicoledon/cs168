@@ -105,7 +105,12 @@ class DVRouter(DVRouterBase):
         :return: nothing.
         """
         ##### Begin Stages 3, 6, 7, 8, 10 #####
-        for port in self.ports.get_all_ports():
+        ports = []
+        if single_port == None:
+           ports = [port for port in self.ports.get_all_ports()]
+        else:
+           ports = [single_port]       
+        for port in ports:
             for key in self.table.keys():
                 if self.table[key].latency > self.ROUTE_TTL:
                     if force == True:
@@ -187,7 +192,8 @@ class DVRouter(DVRouterBase):
         self.ports.add_port(port, latency)
 
         ##### Begin Stage 10B #####
-        
+        if self.SEND_ON_LINK_UP:
+            self.send_routes(force=False , single_port=port)
         ##### End Stage 10B #####
 
     def handle_link_down(self, port):

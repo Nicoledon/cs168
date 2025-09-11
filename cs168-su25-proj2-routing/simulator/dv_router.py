@@ -217,6 +217,7 @@ class DVRouter(DVRouterBase):
                if self.table[key].port == port:
                   items.append(key)
            for item in items:
+                
                 self.table.pop(item)
             ##### End Stage 10B #####
 

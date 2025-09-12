@@ -712,10 +712,10 @@ class StudentUSocket(StudentUSocketBase):
     """
 
     ## Start of Stage 5.1 ##
-    self.snd.wnd = self.TX_DATA_MAX # remove when implemented
+    self.snd.wnd = seg.win# remove when implemented
     self.snd.wl1 = seg.seq
     self.snd.wl2 = seg.ack
-
+    
     ## End of Stage 5.1 ##
 
   def handle_accepted_ack(self, seg):

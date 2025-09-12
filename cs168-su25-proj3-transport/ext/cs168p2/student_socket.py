@@ -854,12 +854,18 @@ class StudentUSocket(StudentUSocketBase):
     bytes_sent = 0
 
     ## Start of Stage 4.3 ##
-    remaining = 0
+    if len(self.tx_data) == 0:
+       return 
+    remaining =  self.snd.wnd
     while remaining > 0:
       num_pkts += 1
-      bytes_sent += len(payload)
-    
-    p = self.new_packet(ack=False, data=payload, syn =False)
+      bytes_sent += 1
+      remaining -= 1
+      if bytes_sent > self.mss:
+         break 
+    print(bytes_sent)
+    p = self.new_packet(ack=True, data=self.tx_data[0:bytes_sent], syn =False)
+    self.tx_data = self.tx_data[bytes_sent:]
     self.tx(p)
     self.log.debug("sent {0} packets with {1} bytes total".format(num_pkts, bytes_sent))
     ## End of Stage 4.3 ##

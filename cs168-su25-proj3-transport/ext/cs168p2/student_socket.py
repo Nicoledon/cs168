@@ -542,12 +542,12 @@ class StudentUSocket(StudentUSocketBase):
     self.bind(dev.ip_addr, 0)
 
     ## Start of Stage 1.1 ##
-    self.snd.nxt = self.snd.iss  %(1 << 32)
-    self.snd.una = self.snd.iss % (1 << 32)
+    self.snd.nxt = self.snd.iss  
+    self.snd.una = self.snd.iss 
     p = self.new_packet(ack=False , data=None , syn=True)
     self.tx(p)
     self.state = SYN_SENT
-    self.snd.nxt = (self.snd.nxt | PLUS | 1 ) % (1 << 32)
+    self.snd.nxt = (self.snd.nxt | PLUS | 1 )
     ## End of Stage 1.1 ##
 
   def tx(self, p, retxed=False):
@@ -657,7 +657,7 @@ class StudentUSocket(StudentUSocketBase):
       self.snd.una = seg.ack 
       if self.snd.una |GT| self.snd.iss:
         pass
-      self.snd.nxt = (seg.ack ) % (1<< 32)
+      self.snd.nxt = seg.ack
       self.state = ESTABLISHED
       self.set_pending_ack()
       self.update_window(seg)
@@ -691,8 +691,8 @@ class StudentUSocket(StudentUSocketBase):
       payload = payload[:rcv.wnd] # Chop to size!
 
     ## Start of Stage 2.3 ##
-    self.rcv.nxt = (self.rcv.nxt | PLUS | len(payload) ) % (1 << 32)
-    self.rcv.wnd = (len(self.rx_data) - len(payload)) % (1 << 32)
+    self.rcv.nxt = (self.rcv.nxt | PLUS | len(payload) ) 
+    self.rcv.wnd = (self.rcv.wnd | MINUS | len(payload))
     self.rx_data += payload
     self.set_pending_ack()
     ## End of Stage 2.3 ##

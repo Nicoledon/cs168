@@ -783,7 +783,7 @@ class StudentUSocket(StudentUSocketBase):
           self.handle_accepted_ack(seg)
       elif seg.ack |LT|  self.snd.una :
             continue_after_ack = False
-      else:
+      elif seg.ack | GT | self.snd.nxt:
             continue_after_ack = False
             return continue_after_ack 
       ## End of Stage 4.1 ##

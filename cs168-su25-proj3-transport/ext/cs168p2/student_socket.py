@@ -558,7 +558,7 @@ class StudentUSocket(StudentUSocketBase):
     """
     p.retxed = retxed
 
-    ## Start of Stage 8.1 ##
+    ## Start of Stage j j j j j j#
     # in Stage 8, you may need to modify what you implemented in Stage 4.
     
       
@@ -875,6 +875,8 @@ class StudentUSocket(StudentUSocketBase):
     remaining  = len(self.tx_data)
     while remaining > 0:
           count = 0
+          if self.snd.nxt - self.snd.una >= self.snd.wnd:
+              break
           if self.snd.wnd > self.mss:
              count = self.mss
           else:
@@ -883,7 +885,7 @@ class StudentUSocket(StudentUSocketBase):
           self.tx(p)
           self.tx_data = self.tx_data[count:]
           remaining -= count
-              
+    self.log.debug("hwewe") 
     self.log.debug("sent {0} packets with {1} bytes total".format(num_pkts, bytes_sent))
     ## End of Stage 4.3 ##
 

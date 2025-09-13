@@ -874,25 +874,15 @@ class StudentUSocket(StudentUSocketBase):
        return 
     remaining  = len(self.tx_data)
     while remaining > 0:
-          count = 0 
-          if remaining > self.mss:
+          count = 0
+          if self.snd.wnd > self.mss:
              count = self.mss
           else:
-             count = remaining
-
-          if count > self.snd.wnd:
-             p = self.new_packet(ack=True, data=self.tx_data[0:self.snd.wnd] ,syn =False)
-             self.tx_data = self.tx_data[self.snd.wnd:]
-             self.tx(p)
-             num_pkts += 1
              count = self.snd.wnd
-             remaining -=count
-          else:
-              p = self.new_packet(ack=True, data=self.tx_data[0:count], syn =False)
-              self.tx_data = self.tx_data[count:]
-              self.tx(p)
-              num_pkts += 1
-              remaining -= count
+          p = self.new_packet(ack=True , data= self.tx_data[0:count] ,syn=False)
+          self.tx(p)
+          self.tx_data = self.tx_data[count:]
+          remaining -= count
               
     self.log.debug("sent {0} packets with {1} bytes total".format(num_pkts, bytes_sent))
     ## End of Stage 4.3 ##

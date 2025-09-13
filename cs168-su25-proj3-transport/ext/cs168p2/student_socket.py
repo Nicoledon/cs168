@@ -676,7 +676,7 @@ class StudentUSocket(StudentUSocketBase):
     """
 
     ## Start of Stage 9.1 ##
-
+    
     ## End of Stage 9.1 ##
 
     pass
@@ -711,10 +711,10 @@ class StudentUSocket(StudentUSocketBase):
     """
 
     ## Start of Stage 5.1 ##
-    self.snd.wnd = seg.win# remove when implemented
+    self.snd.wnd = seg.win
+    # remove when implemented
     self.snd.wl1 = seg.seq
     self.snd.wl2 = seg.ack
-    
     ## End of Stage 5.1 ##
 
   def handle_accepted_ack(self, seg):
@@ -872,30 +872,28 @@ class StudentUSocket(StudentUSocketBase):
     ## Start of Stage 4.3 ##
     if len(self.tx_data) == 0:
        return 
-    # remaining =  self.snd.wnd
-    # while remaining > 0:
-    #   num_pkts += 1
-    #   bytes_sent += 1
-    #   remaining -= 1
-    #   if bytes_sent > self.mss:
-    #      break 
-    # print(bytes_sent)
-    # p = self.new_packet(ack=True, data=self.tx_data[0:bytes_sent], syn =False)
-    # self.tx_data = self.tx_data[bytes_sent:]
-    # self.tx(p)
     remaining  = len(self.tx_data)
     while remaining > 0:
-          old_value = remaining
+          count = 0 
           if remaining > self.mss:
-             remaining = self.mss
-          p = self.new_packet(ack=True, data=self.tx_data[0:remaining], syn =False)
-          self.tx_data = self.tx_data[remaining:]
-          self.tx(p)
-          num_pkts += 1
-          bytes_sent += remaining
-          if bytes_sent > self.snd.wnd:
-             break
-          remaining = old_value - remaining
+             count = self.mss
+          else:
+             count = remaining
+
+          if count > self.snd.wnd:
+             p = self.new_packet(ack=True, data=self.tx_data[0:self.snd.wnd] ,syn =False)
+             self.tx_data = self.tx_data[self.snd.wnd:]
+             self.tx(p)
+             num_pkts += 1
+             count = self.snd.wnd
+             remaining -=count
+          else:
+              p = self.new_packet(ack=True, data=self.tx_data[0:count], syn =False)
+              self.tx_data = self.tx_data[count:]
+              self.tx(p)
+              num_pkts += 1
+              remaining -= count
+              
     self.log.debug("sent {0} packets with {1} bytes total".format(num_pkts, bytes_sent))
     ## End of Stage 4.3 ##
 

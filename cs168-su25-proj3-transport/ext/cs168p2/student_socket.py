@@ -560,14 +560,14 @@ class StudentUSocket(StudentUSocketBase):
 
     ## Start of Stage 8.1 ##
     # in Stage 8, you may need to modify what you implemented in Stage 4.
-
-
+    
+      
     if (p.tcp.SYN or p.tcp.FIN or p.tcp.payload) and not retxed:
-
+      p.tx_ts = self.stack.now
+      self.retx_queue.push(p)
       ## Start of Stage 4.4 ##
       self.snd.nxt = self.snd.nxt | PLUS | len(p.tcp.payload)
       ## End of Stage 4.4 ##
-      pass
 
     ## End of Stage 8.1 ##
     
@@ -730,7 +730,7 @@ class StudentUSocket(StudentUSocketBase):
 
 
     ## Start of Stage 8.2 ##
-
+    self.retx_queue.pop_upto(seg.ack )
     ## End of Stage 8.2 ##
 
 
@@ -790,7 +790,7 @@ class StudentUSocket(StudentUSocketBase):
     # fifth, check ACK field
     if self.state in (ESTABLISHED, FIN_WAIT_1, FIN_WAIT_2, CLOSE_WAIT, CLOSING):
       ## Start of Stage 4.1 ##
-      if seg.ack |GE| self.snd.una and seg.ack | LE | self.snd.nxt:
+      if seg.ack |GE| self.snd.una and seg.ack |LE| self.snd.nxt:
           self.handle_accepted_ack(seg)
       elif seg.ack |LT|  self.snd.una :
             continue_after_ack = False
@@ -872,17 +872,30 @@ class StudentUSocket(StudentUSocketBase):
     ## Start of Stage 4.3 ##
     if len(self.tx_data) == 0:
        return 
-    remaining =  self.snd.wnd
+    # remaining =  self.snd.wnd
+    # while remaining > 0:
+    #   num_pkts += 1
+    #   bytes_sent += 1
+    #   remaining -= 1
+    #   if bytes_sent > self.mss:
+    #      break 
+    # print(bytes_sent)
+    # p = self.new_packet(ack=True, data=self.tx_data[0:bytes_sent], syn =False)
+    # self.tx_data = self.tx_data[bytes_sent:]
+    # self.tx(p)
+    remaining  = len(self.tx_data)
     while remaining > 0:
-      num_pkts += 1
-      bytes_sent += 1
-      remaining -= 1
-      if bytes_sent > self.mss:
-         break 
-    print(bytes_sent)
-    p = self.new_packet(ack=True, data=self.tx_data[0:bytes_sent], syn =False)
-    self.tx_data = self.tx_data[bytes_sent:]
-    self.tx(p)
+          old_value = remaining
+          if remaining > self.mss:
+             remaining = self.mss
+          p = self.new_packet(ack=True, data=self.tx_data[0:remaining], syn =False)
+          self.tx_data = self.tx_data[remaining:]
+          self.tx(p)
+          num_pkts += 1
+          bytes_sent += remaining
+          if bytes_sent > self.snd.wnd:
+             break
+          remaining = old_value - remaining
     self.log.debug("sent {0} packets with {1} bytes total".format(num_pkts, bytes_sent))
     ## End of Stage 4.3 ##
 
@@ -909,9 +922,12 @@ class StudentUSocket(StudentUSocketBase):
 
     ## Start of Stage 8.3 ##
     time_in_queue = 0 # modify when implemented
-
+    p = None
+    if not self.retx_queue.empty():
+       p = self.retx_queue.get_earliest_pkt()[1]
+       time_in_queue = self.stack.now - p.tx_ts
+        
     ## End of Stage 8.3 ##
-
     if time_in_queue > self.rto:
       self.log.debug("earliest packet seqno={0} rto={1} being rtxed".format(p.tcp.seq, self.rto))
       self.tx(p, retxed=True)

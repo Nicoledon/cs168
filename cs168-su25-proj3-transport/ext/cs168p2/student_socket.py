@@ -680,14 +680,15 @@ class StudentUSocket(StudentUSocketBase):
     #     self.srtt = (1 - self.beta) * self.rttvar + self.beta *abs(self.srtt - R) 
     #     self.rttvar = (1 - self.alpha) * self.srtt + self.alpha * R 
     #     self.rto = self.srtt + max(self.G ,self.K * self.rttvar)  
-    R = self.stack.now  - acked_pkt.tx_ts
+    R =(self.stack.now  - acked_pkt.tx_ts)
+    print("MAX: ",self.MAX_RTO)
     if self.rto == 1 and self.srtt == 0 and self.rttvar == 0:
-        self.srtt = R 
+        self.srtt = R
         self.rttvar = R / 2
         self.rto = self.srtt + max(self.G , self.K * self.rttvar)  
     else:
-        self.srtt = (1 - self.beta) * self.rttvar + self.beta * abs(self.srtt - R) 
-        self.rttvar = (1 - self.alpha) * self.srtt + self.alpha * R 
+        self.rttvar = (1 - self.beta) * self.rttvar + self.beta * abs(self.srtt - R) 
+        self.srtt = (1 - self.alpha) * self.srtt + self.alpha * R 
         self.rto = self.srtt + max(self.G ,self.K * self.rttvar)  
 
     if self.rto < self.MIN_RTO :
@@ -901,7 +902,6 @@ class StudentUSocket(StudentUSocketBase):
           self.tx(p)
           self.tx_data = self.tx_data[count:]
           remaining -= count
-    self.log.debug("hwewe") 
     self.log.debug("sent {0} packets with {1} bytes total".format(num_pkts, bytes_sent))
     ## End of Stage 4.3 ##
 

@@ -675,14 +675,13 @@ class StudentUSocket(StudentUSocketBase):
     Updates the rto based on rfc 6298.
     """
 
-    ## Start of Stage 9.1 ##
+    ## Start of Stage j j.1 ##
     # if self.srtt == R:
     #     self.srtt = (1 - self.beta) * self.rttvar + self.beta *abs(self.srtt - R) 
     #     self.rttvar = (1 - self.alpha) * self.srtt + self.alpha * R 
     #     self.rto = self.srtt + max(self.G ,self.K * self.rttvar)  
     R =(self.stack.now  - acked_pkt.tx_ts)
-    print("MAX: ",self.MAX_RTO)
-    if self.rto == 1 and self.srtt == 0 and self.rttvar == 0:
+    if  self.srtt == 0 :
         self.srtt = R
         self.rttvar = R / 2
         self.rto = self.srtt + max(self.G , self.K * self.rttvar)  
@@ -690,8 +689,8 @@ class StudentUSocket(StudentUSocketBase):
         self.rttvar = (1 - self.beta) * self.rttvar + self.beta * abs(self.srtt - R) 
         self.srtt = (1 - self.alpha) * self.srtt + self.alpha * R 
         self.rto = self.srtt + max(self.G ,self.K * self.rttvar)  
-
-    if self.rto < self.MIN_RTO :
+    print("self.rttvar: ",self.rttvar)
+    if self.rto < self.MIN_RTO:
         self.rto = self.MIN_RTO
     elif self.rto > self.MAX_RTO:
          self.rto = self.MAX_RTO 
@@ -892,12 +891,13 @@ class StudentUSocket(StudentUSocketBase):
     remaining  = len(self.tx_data)
     while remaining > 0:
           count = 0
-          if self.snd.nxt - self.snd.una >= self.snd.wnd:
+          allow_send = self.snd.wnd - (self.snd.nxt - self.snd.una)
+          if allow_send <= 0:
               break
-          if self.snd.wnd > self.mss:
+          if allow_send > self.mss:
              count = self.mss
           else:
-             count = self.snd.wnd
+             count = allow_send
           p = self.new_packet(ack=True , data= self.tx_data[0:count] ,syn=False)
           self.tx(p)
           self.tx_data = self.tx_data[count:]
